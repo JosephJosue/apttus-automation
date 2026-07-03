@@ -29,6 +29,11 @@ class Config:
     datasets: list[str] | str = "all"
 
     def __post_init__(self):
+        # YAML 1.1 reads an unquoted NO (Norway) as boolean False.
+        self.split_countries = ["NO" if c is False else str(c) for c in self.split_countries]
+        bad = [c for c in self.split_countries if len(c) != 2 or not c.isupper()]
+        if bad:
+            raise ValueError(f"split_countries must be ISO-2 codes, got {bad}")
         self.base_dir = Path(self.base_dir)
         for name in ("current_release", "previous_release", "soql_exports", "output", "split"):
             p = Path(getattr(self, name))

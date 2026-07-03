@@ -12,4 +12,5 @@ export_max_age_days: 7           # older org exports fail the freshness check
 strict_columns: true             # unexpected columns in an export = hard fail
 datasets: all                    # or a list of registry keys, e.g. [L07, L09]
 
-split_countries: [BE, NL, PT, ES, DK, FI, SE, NO, FR, DE, CH, AT, IT, GB, IE]
+# quoted: unquoted NO would be parsed as YAML boolean false
+split_countries: ["BE", "NL", "PT", "ES", "DK", "FI", "SE", "NO", "FR", "DE", "CH", "AT", "IT", "GB", "IE"]

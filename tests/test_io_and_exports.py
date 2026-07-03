@@ -108,3 +108,12 @@ def test_load_export_rejects_schema_drift(tmp_path):
     found, _ = check_exports(cfg, [DATASETS["L01"]])
     with pytest.raises(ExportError, match="schema drift"):
         load_export(found[0], DATASETS["L01"])
+
+
+def test_config_norway_yaml_boolean(tmp_path):
+    cfg_file = tmp_path / "config.yaml"
+    cfg_file.write_text("split_countries: [SE, NO, DE]\n", encoding="utf-8")
+    from apttus_delta.config import load_config
+
+    cfg = load_config(cfg_file)
+    assert cfg.split_countries == ["SE", "NO", "DE"]
