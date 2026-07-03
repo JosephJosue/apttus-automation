@@ -1,4 +1,10 @@
-"""Run configuration, loaded from config.yaml (all keys optional)."""
+"""Run configuration, loaded from config.yaml (all keys optional).
+
+The pipeline runs against a *data directory* — the local folder (e.g. the
+synced SharePoint/OneDrive "Apttus Automation" folder) that contains the
+release snapshots. The repo only carries the code; set `data_dir` in
+config.yaml (or pass --data-dir) to point at the data. Every data path
+below resolves relative to `data_dir` unless given as absolute."""
 
 from __future__ import annotations
 
@@ -12,15 +18,22 @@ import yaml
 DEFAULT_SPLIT_COUNTRIES = ["BE", "NL", "PT", "ES", "DK", "FI", "SE", "NO", "FR", "DE", "CH",
                            "AT", "IT", "GB", "IE"]
 
+# Paths that live inside the data directory.
+_DATA_PATHS = ("current_release", "previous_release", "soql_exports", "output", "split",
+               "apttus_files", "validation")
+
 
 @dataclass
 class Config:
-    base_dir: Path = Path(".")
+    base_dir: Path = Path(".")          # where config.yaml lives; resolves a relative data_dir
+    data_dir: Path = Path(".")          # the local "Apttus Automation" data folder
     current_release: Path = Path("01. Current Release")
     previous_release: Path = Path("00. Previous Release")
     soql_exports: Path = Path("SOQL Exports")
     output: Path = Path("Output")
     split: Path = Path("Split")
+    apttus_files: Path = Path("Apttus Files")   # legacy workbooks, used by `verify`
+    validation: Path = Path("Validation")       # legacy validation folder, used by `verify`
     org_profile: str = "prod"  # "prod" | "itest4"
     release_date: date = field(default_factory=date.today)
     split_countries: list[str] = field(default_factory=lambda: list(DEFAULT_SPLIT_COUNTRIES))
@@ -35,9 +48,11 @@ class Config:
         if bad:
             raise ValueError(f"split_countries must be ISO-2 codes, got {bad}")
         self.base_dir = Path(self.base_dir)
-        for name in ("current_release", "previous_release", "soql_exports", "output", "split"):
-            p = Path(getattr(self, name))
-            setattr(self, name, p if p.is_absolute() else self.base_dir / p)
+        data = Path(self.data_dir).expanduser()
+        self.data_dir = data if data.is_absolute() else self.base_dir / data
+        for name in _DATA_PATHS:
+            p = Path(getattr(self, name)).expanduser()
+            setattr(self, name, p if p.is_absolute() else self.data_dir / p)
 
     @property
     def release_stamp(self) -> str:
@@ -50,14 +65,15 @@ class Config:
         return self.release_date.strftime("%d%b").upper()
 
 
-def load_config(path: Path | None) -> Config:
+def load_config(path: Path | None, data_dir: Path | None = None) -> Config:
     if path is None:
-        return Config()
+        return Config(data_dir=data_dir or Path("."))
     raw = yaml.safe_load(Path(path).read_text(encoding="utf-8")) or {}
     paths = raw.pop("paths", {})
     if "release_date" in raw and raw["release_date"]:
         raw["release_date"] = date.fromisoformat(str(raw["release_date"]))
     else:
         raw.pop("release_date", None)
-    cfg = Config(base_dir=Path(path).resolve().parent, **paths, **raw)
-    return cfg
+    if data_dir is not None:  # --data-dir overrides the config file
+        raw["data_dir"] = data_dir
+    return Config(base_dir=Path(path).resolve().parent, **paths, **raw)

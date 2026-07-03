@@ -19,8 +19,23 @@ Python outputs are drop-in replacements for the Power Query results.
 
 ```bash
 pip install -e .          # installs pandas, openpyxl, PyYAML + the apttus-delta CLI
-git lfs pull              # the release .xlsx files are stored in Git LFS
 ```
+
+**The data lives outside the repo.** The repo carries the code; the release
+snapshots live in your local "Apttus Automation" folder (the synced
+SharePoint/OneDrive one, with `00. Previous Release/`, `01. Current
+Release/`, etc. inside). Point the pipeline at it in `config.yaml`:
+
+```yaml
+data_dir: "C:/Users/<you>/Philips/PST Onboard Business and Markets - Documents/Catalogue Releases/Apttus Automation"
+```
+
+or per run with `--data-dir`. All data folders (releases, `SOQL Exports/`,
+`Output/`, `Split/`, and the legacy `Apttus Files/`/`Validation/` used by
+`verify`) resolve inside `data_dir`; any of them can be overridden with an
+absolute path under `paths:`. The copies of the data checked into this repo
+(Git LFS) are a reference snapshot for development — `data_dir: "."` runs
+against them.
 
 ## The two comparison modes
 

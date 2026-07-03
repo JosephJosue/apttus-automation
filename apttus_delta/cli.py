@@ -19,6 +19,9 @@ from .datasets import DATASETS
 def _add_common(p):
     p.add_argument("--config", type=Path, default=None,
                    help="path to config.yaml (default: ./config.yaml if present)")
+    p.add_argument("--data-dir", type=Path, default=None,
+                   help="local data folder holding the release snapshots "
+                        "(overrides data_dir in config.yaml)")
     p.add_argument("--datasets", type=str, default=None,
                    help="comma-separated dataset keys (default: all), e.g. L07,L09")
     p.add_argument("--org", type=str, default=None, choices=["prod", "itest4"],
@@ -29,7 +32,7 @@ def _config(args):
     path = args.config
     if path is None and Path("config.yaml").is_file():
         path = Path("config.yaml")
-    cfg = load_config(path)
+    cfg = load_config(path, data_dir=args.data_dir)
     if getattr(args, "datasets", None):
         cfg.datasets = [k.strip() for k in args.datasets.split(",") if k.strip()]
     if getattr(args, "org", None):

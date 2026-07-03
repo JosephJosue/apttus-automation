@@ -1,10 +1,21 @@
-# Configuration for the apttus-delta pipeline. Paths are relative to this file.
+# Configuration for the apttus-delta pipeline.
+#
+# data_dir is the LOCAL folder holding the release data (e.g. your synced
+# "Apttus Automation" SharePoint/OneDrive folder). The repo only carries the
+# code. A relative data_dir resolves next to this file; use an absolute path
+# for the real setup, e.g.:
+#   data_dir: "C:/Users/<you>/Philips/PST Onboard Business and Markets - Documents/Catalogue Releases/Apttus Automation"
+data_dir: "."
+
+# All of these live inside data_dir (override with absolute paths if needed).
 paths:
   current_release: "01. Current Release"
   previous_release: "00. Previous Release"
   soql_exports: "SOQL Exports"   # manual Salesforce export drop folder
   output: "Output"               # delta workbooks + run report
   split: "Split"                 # per-country split output
+  apttus_files: "Apttus Files"   # legacy workbooks (only used by `verify`)
+  validation: "Validation"       # legacy validation folder (only used by `verify`)
 
 org_profile: prod                # prod | itest4 -> reads SOQL Exports/<org_profile>/
 release_date: null               # YYYY-MM-DD; null = today; stamps output file names

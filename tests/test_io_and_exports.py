@@ -117,3 +117,33 @@ def test_config_norway_yaml_boolean(tmp_path):
 
     cfg = load_config(cfg_file)
     assert cfg.split_countries == ["SE", "NO", "DE"]
+
+
+def test_config_paths_resolve_under_data_dir(tmp_path):
+    cfg_file = tmp_path / "cfg/config.yaml"
+    cfg_file.parent.mkdir()
+    cfg_file.write_text('data_dir: "/data/Apttus Automation"\n', encoding="utf-8")
+    from apttus_delta.config import load_config
+
+    cfg = load_config(cfg_file)
+    assert str(cfg.current_release) == "/data/Apttus Automation/01. Current Release"
+    assert str(cfg.soql_exports) == "/data/Apttus Automation/SOQL Exports"
+    assert str(cfg.apttus_files) == "/data/Apttus Automation/Apttus Files"
+
+
+def test_config_relative_data_dir_resolves_next_to_config(tmp_path):
+    cfg_file = tmp_path / "config.yaml"
+    cfg_file.write_text('data_dir: "data"\n', encoding="utf-8")
+    from apttus_delta.config import load_config
+
+    cfg = load_config(cfg_file)
+    assert cfg.output == tmp_path / "data/Output"
+
+
+def test_config_cli_data_dir_overrides_file(tmp_path):
+    cfg_file = tmp_path / "config.yaml"
+    cfg_file.write_text('data_dir: "/ignored"\n', encoding="utf-8")
+    from apttus_delta.config import load_config
+
+    cfg = load_config(cfg_file, data_dir=tmp_path / "real")
+    assert cfg.previous_release == tmp_path / "real/00. Previous Release"

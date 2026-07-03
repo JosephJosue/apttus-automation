@@ -117,8 +117,8 @@ def _org_from_workbook(path: Path, ds) -> pd.DataFrame:
 
 
 def verify(cfg) -> int:
-    apttus_files = cfg.base_dir / "Apttus Files"
-    validation_root = cfg.base_dir / "Validation"
+    apttus_files = cfg.apttus_files
+    validation_root = cfg.validation
     lines: list[str] = []
 
     print("== Delta parity vs Apttus Files workbooks ==")
