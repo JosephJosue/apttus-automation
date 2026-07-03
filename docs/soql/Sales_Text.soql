@@ -1,0 +1,16 @@
+-- L06. Sales_Text — org-side input for the release delta.
+-- Run in Workbench / Data Loader, export as CSV, save as:
+--   SOQL Exports/<prod|itest4>/Sales_Text_<YYYY-MM-DD>.csv
+SELECT Apttus_Config2__ProductId__r.APTS_Ext_ID__c,
+       Apttus_Config2__ProductId__r.Name,
+       Apttus_Config2__ProductCode__c,
+       Apttus_Config2__Name__c,
+       APTS_Country_Code__c,
+       APTS_Language__c,
+       APTS_Entitlement_Category__c,
+       APTS_Entitlement_SubCategory__c,
+       Apttus_Config2__Description__c,
+       APTS_Long_Sales_Text__c,
+       APTS_Exclude_From_CFD__c,
+       APTS_Ext_ID__c
+FROM Apttus_Config2__ProductTranslation__c

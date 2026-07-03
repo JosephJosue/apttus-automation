@@ -1,0 +1,9 @@
+-- G05. cCRM_Product_Mapping — org-side input for the release delta.
+-- Run in Workbench / Data Loader, export as CSV, save as:
+--   SOQL Exports/<prod|itest4>/cCRM_Product_Mapping_<YYYY-MM-DD>.csv
+SELECT Apttus_Product__r.APTS_Ext_ID__c,
+       Apttus_Product__r.Name,
+       CCRM_Product__r.APTS_Ext_ID__c,
+       CCRM_Product__r.Name,
+       Service_Plan_Type__c
+FROM APTS_Apttus_cCRM_Product_Mapping__c
