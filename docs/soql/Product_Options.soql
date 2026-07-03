@@ -1,0 +1,10 @@
+-- G04. Product_Options — org-side input for the release delta.
+-- Run in Workbench / Data Loader, export as CSV, save as:
+--   SOQL Exports/<prod|itest4>/Product_Options_<YYYY-MM-DD>.csv
+SELECT Name,
+       ExternalId__c,
+       Option__r.APTS_Ext_ID__c,
+       Option__r.Name,
+       Product__r.APTS_Ext_ID__c,
+       Product__r.Name
+FROM M2O_ProductOptions__c

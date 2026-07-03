@@ -1,0 +1,10 @@
+-- G02. CVG — org-side input for the release delta.
+-- Run in Workbench / Data Loader, export as CSV, save as:
+--   SOQL Exports/<prod|itest4>/CVG_<YYYY-MM-DD>.csv
+SELECT Name,
+       APTS_Ext_ID__c,
+       Description__c,
+       APTS_Exclude_From_CFD__c,
+       Service_Group__c,
+       Service_Group_Description__c
+FROM APTS_CVG__c

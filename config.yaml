@@ -1,0 +1,15 @@
+# Configuration for the apttus-delta pipeline. Paths are relative to this file.
+paths:
+  current_release: "01. Current Release"
+  previous_release: "00. Previous Release"
+  soql_exports: "SOQL Exports"   # manual Salesforce export drop folder
+  output: "Output"               # delta workbooks + run report
+  split: "Split"                 # per-country split output
+
+org_profile: prod                # prod | itest4 -> reads SOQL Exports/<org_profile>/
+release_date: null               # YYYY-MM-DD; null = today; stamps output file names
+export_max_age_days: 7           # older org exports fail the freshness check
+strict_columns: true             # unexpected columns in an export = hard fail
+datasets: all                    # or a list of registry keys, e.g. [L07, L09]
+
+split_countries: [BE, NL, PT, ES, DK, FI, SE, NO, FR, DE, CH, AT, IT, GB, IE]

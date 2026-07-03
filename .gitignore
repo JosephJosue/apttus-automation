@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+
+# Generated pipeline outputs
+Output/
+
+# Manual Salesforce exports (org data; drop them here, don't commit them)
+SOQL Exports/*/*.csv
+SOQL Exports/*/*.xlsx

@@ -1,0 +1,15 @@
+-- G07. Global_EqModels — org-side input for the release delta.
+-- Run in Workbench / Data Loader, export as CSV, save as:
+--   SOQL Exports/<prod|itest4>/Global_EqModels_<YYYY-MM-DD>.csv
+-- NOTE: restrict to the equipment-product subset your saved Global Eq Models query selects.
+SELECT APTS_Ext_ID__c,
+       ProductCode,
+       Name,
+       APTS_Service_Product_Category__c,
+       APTS_Service_Product_Range__c,
+       APTS_PM_Duration_of_visit_onsite__c,
+       APTS_PM_Engineers_per_visit__c,
+       APTS_PM_Visits_per_year__c,
+       APTS_Available_CVG_Groups__c,
+       APTS_Not_Available_CVG_Groups__c
+FROM Product2
