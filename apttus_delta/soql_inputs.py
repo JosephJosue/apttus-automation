@@ -231,7 +231,10 @@ def write_template(cfg, datasets: list[Dataset]) -> Path:
     info.append([f"1. Save a copy named {WORKBOOK_PREFIX}_<date>.xlsx, e.g. "
                  f"{WORKBOOK_PREFIX}_{cfg.release_date.isoformat()}.xlsx (date = today)."])
     info.append(["2. For each sheet: run the query below in Salesforce, copy the full "
-                 "result INCLUDING the header row, and paste it into cell A1 of that sheet."])
+                 "result INCLUDING the header row, and paste it into cell A1 of that "
+                 "sheet, replacing the pre-filled header. Columns are matched by NAME, "
+                 "so extra columns in the result (like _, Id or Product__r) and a "
+                 "different column order are fine — they are ignored automatically."])
     info.append(["3. Save, then run: python -m apttus_delta check-exports"])
     info.append([])
     info.append(["Sheet", "Query"])
@@ -240,6 +243,12 @@ def write_template(cfg, datasets: list[Dataset]) -> Path:
             continue
         info.append([ds.export_key, soql_text(ds)])
         ws = wb.create_sheet(title=ds.export_key)
+        # Text-format the paste area so codes keep leading zeros ("005") and
+        # long numeric ids keep every digit when pasted from the browser.
+        for i in range(1, len(ds.org_required) + 5):  # + room for _, Id, containers
+            col = ws.column_dimensions[openpyxl.utils.get_column_letter(i)]
+            col.number_format = "@"
+            col.width = 24
         ws.append(list(ds.org_required))
         ws.freeze_panes = "A2"
     for cell in info["A"]:

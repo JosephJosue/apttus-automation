@@ -226,3 +226,14 @@ def test_make_template_contains_all_soql_sheets(tmp_path):
     # the template itself must not be picked up as a dated export
     found, problems = check_exports(cfg, [DATASETS["L01"]])
     assert found == [] and problems
+
+
+def test_template_columns_are_text_formatted(tmp_path):
+    from apttus_delta.soql_inputs import write_template
+
+    cfg = _cfg(tmp_path)
+    path = write_template(cfg, list(DATASETS.values()))
+    wb = openpyxl.load_workbook(path)
+    ws = wb["CFD_Exhibits"]
+    assert ws.column_dimensions["A"].number_format == "@"
+    assert ws.column_dimensions["G"].number_format == "@"
