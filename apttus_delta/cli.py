@@ -40,9 +40,24 @@ def _config(args):
     return cfg
 
 
+_WELCOME = """\
+Apttus Release Delta Tool — tell it what to do by adding a command:
+
+  python -m apttus_delta make-template    create the Salesforce paste-in workbook
+                                          (first time, or to start a fresh one)
+  python -m apttus_delta check-exports    check the pasted Salesforce data is complete
+  python -m apttus_delta run              compare the releases and write the delta files
+  python -m apttus_delta split            create the per-country files
+  python -m apttus_delta verify           compare results against the old Excel pipeline
+
+A normal release run is: make-template (once) -> paste data -> check-exports -> run -> split.
+Step-by-step instructions: see README.md. Add --help to any command for its options.\
+"""
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="apttus-delta", description=__doc__)
-    sub = parser.add_subparsers(dest="command", required=True)
+    sub = parser.add_subparsers(dest="command")
 
     _add_common(sub.add_parser("run", help="compute all deltas and write output workbooks"))
     _add_common(sub.add_parser("check-exports", help="validate the SOQL export drop folder"))
@@ -54,6 +69,9 @@ def main(argv=None) -> int:
     _add_common(verify_p)
 
     args = parser.parse_args(argv)
+    if args.command is None:
+        print(_WELCOME)
+        return 0
     cfg = _config(args)
 
     if args.command == "run":
