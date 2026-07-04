@@ -119,8 +119,13 @@ already filled with the correct column headers:
    (the date must be `YYYY-MM-DD`).
 2. Log into the org (production; use the `itest4` folder for iTest4 runs).
 3. For each sheet: run its query (it's on the Instructions sheet), copy
-   the whole result, and paste it into the sheet. Pasting over the header
-   row is fine — pasting below it is fine too; the tool handles both.
+   the **whole result including its header row**, and paste it into cell
+   A1 of the sheet, replacing the pre-filled header. Don't worry if your
+   result has extra columns (`_`, `Id`, `Product__r`, …) or a different
+   column order than the template — columns are matched by name and
+   extras are ignored. Codes like `005` keep their leading zeros because
+   the sheets are text-formatted; numbers shown as `9.9E+11` are just
+   Excel's display, the full value is intact.
 4. Save the workbook.
 
 Workbooks older than 7 days are refused (so a run never silently uses last
