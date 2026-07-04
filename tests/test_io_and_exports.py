@@ -75,7 +75,7 @@ def test_check_exports_collects_missing_and_stale(tmp_path):
     assert found == []
     assert len(problems) == 2
     assert any("days old" in p for p in problems)
-    assert any("no export named" in p for p in problems)
+    assert any("no data found" in p for p in problems)
 
 
 def test_check_exports_picks_newest_and_rejects_ambiguity(tmp_path):
@@ -147,3 +147,82 @@ def test_config_cli_data_dir_overrides_file(tmp_path):
 
     cfg = load_config(cfg_file, data_dir=tmp_path / "real")
     assert cfg.previous_release == tmp_path / "real/00. Previous Release"
+
+
+def _l01_workbook(tmp_path, name, rows=(), header=None, extra_sheets=()):
+    folder = tmp_path / "SOQL Exports/prod"
+    folder.mkdir(parents=True, exist_ok=True)
+    header = header or ["Name", "APTS_Ext_ID__c", "APTS_Country__c",
+                        "APTS_Product__r.APTS_Ext_ID__c", "APTS_Product__r.Name"]
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Eq_Price_Relevant_List"
+    ws.append(header)
+    for r in rows:
+        ws.append(r)
+    for sheet in extra_sheets:
+        wb.create_sheet(title=sheet)
+    wb.save(folder / name)
+
+
+def test_check_exports_uses_workbook_sheet(tmp_path):
+    cfg = _cfg(tmp_path)
+    _l01_workbook(tmp_path, "SOQL_Exports_2026-07-01.xlsx", rows=[["a", "a", "DE", "M1", "d"]])
+    found, problems = check_exports(cfg, [DATASETS["L01"]])
+    assert not problems
+    assert found[0].sheet == "Eq_Price_Relevant_List"
+    df = load_export(found[0], DATASETS["L01"])
+    assert df["APTS_Ext_ID__c"].tolist() == ["a"]
+
+
+def test_check_exports_empty_workbook_sheet_is_reported(tmp_path):
+    cfg = _cfg(tmp_path)
+    _l01_workbook(tmp_path, "SOQL_Exports_2026-07-01.xlsx", rows=[])
+    found, problems = check_exports(cfg, [DATASETS["L01"]])
+    assert found == []
+    assert problems and "has no data" in problems[0]
+
+
+def test_check_exports_stale_workbook_is_reported(tmp_path):
+    cfg = _cfg(tmp_path)
+    _l01_workbook(tmp_path, "SOQL_Exports_2026-01-01.xlsx", rows=[["a", "a", "DE", "M1", "d"]])
+    found, problems = check_exports(cfg, [DATASETS["L01"]])
+    assert found == []
+    assert any("days old" in p for p in problems)
+
+
+def test_csv_overrides_workbook_when_newer(tmp_path):
+    cfg = _cfg(tmp_path)
+    _l01_workbook(tmp_path, "SOQL_Exports_2026-06-30.xlsx", rows=[["wb", "wb", "DE", "M", "d"]])
+    _l01_csv(tmp_path, "Eq_Price_Relevant_List_2026-07-01.csv",
+             rows=[["csv", "csv", "DE", "M", "d"]])
+    found, problems = check_exports(cfg, [DATASETS["L01"]])
+    assert not problems and found[0].sheet is None and found[0].path.suffix == ".csv"
+
+
+def test_workbook_repasted_header_row_is_dropped(tmp_path):
+    cfg = _cfg(tmp_path)
+    header = ["Name", "APTS_Ext_ID__c", "APTS_Country__c",
+              "APTS_Product__r.APTS_Ext_ID__c", "APTS_Product__r.Name"]
+    _l01_workbook(tmp_path, "SOQL_Exports_2026-07-01.xlsx",
+                  rows=[header, ["a", "a", "DE", "M1", "d"]])
+    found, _ = check_exports(cfg, [DATASETS["L01"]])
+    df = load_export(found[0], DATASETS["L01"])
+    assert df["APTS_Ext_ID__c"].tolist() == ["a"]
+
+
+def test_make_template_contains_all_soql_sheets(tmp_path):
+    from apttus_delta.soql_inputs import write_template
+
+    cfg = _cfg(tmp_path)
+    path = write_template(cfg, list(DATASETS.values()))
+    wb = openpyxl.load_workbook(path)
+    soql_keys = [d.export_key for d in DATASETS.values() if d.mode == "soql"]
+    assert wb.sheetnames[0] == "Instructions"
+    assert set(soql_keys) <= set(wb.sheetnames)
+    ws = wb["Service_Price_Matrix"]
+    hdr = [c.value for c in ws[1]]
+    assert hdr == list(DATASETS["L07"].org_required)
+    # the template itself must not be picked up as a dated export
+    found, problems = check_exports(cfg, [DATASETS["L01"]])
+    assert found == [] and problems

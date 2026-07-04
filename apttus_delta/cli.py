@@ -46,6 +46,9 @@ def main(argv=None) -> int:
 
     _add_common(sub.add_parser("run", help="compute all deltas and write output workbooks"))
     _add_common(sub.add_parser("check-exports", help="validate the SOQL export drop folder"))
+    _add_common(sub.add_parser("make-template",
+                               help="create the SOQL export workbook template "
+                                    "(one pre-headered sheet per query)"))
     _add_common(sub.add_parser("split", help="write per-country split workbooks"))
     verify_p = sub.add_parser("verify", help="parity checks against the Excel pipeline")
     _add_common(verify_p)
@@ -71,13 +74,24 @@ def main(argv=None) -> int:
             ds = DATASETS[exp.dataset_key]
             try:
                 df = load_export(exp, ds, cfg.strict_columns)
-                print(f"  PASS {exp.dataset_key} {exp.path.name}: {len(df):,} rows "
+                source = exp.path.name + (f" :: {exp.sheet}" if exp.sheet else "")
+                print(f"  PASS {exp.dataset_key} {source}: {len(df):,} rows "
                       f"(exported {exp.export_date})")
             except Exception as e:  # noqa: BLE001
                 problems.append(str(e))
         for p in problems:
             print(f"  FAIL {p}", file=sys.stderr)
         return 1 if problems else 0
+
+    if args.command == "make-template":
+        from .pipeline import select_datasets
+        from .soql_inputs import write_template
+
+        path = write_template(cfg, select_datasets(cfg))
+        print(f"Template written: {path}")
+        print("Fill each sheet from Salesforce, then save a dated copy "
+              f"(e.g. SOQL_Exports_{cfg.release_date.isoformat()}.xlsx).")
+        return 0
 
     if args.command == "split":
         from .split import split_countries

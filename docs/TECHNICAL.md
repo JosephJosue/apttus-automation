@@ -47,38 +47,45 @@ against them.
 | Local comparison | G01 Product_Structure, G08 Rule 1, G09 Rule 5, G10 Rule 7, G11 Rule 8, L08 Market Inclusions, L09 Rule 3 | `01. Current Release/` vs `00. Previous Release/` |
 | SOQL | G00 Product2, G02 CVG, G03 CVG Mapping, G04 Product Options, G05 cCRM Product Mapping, G06 CFD Exhibits, G07 Global Eq Models, L01 Eq Price Relevant List, L02–L05 translations, L06 Sales Text, L07 Service Price Matrix | `01. Current Release/` (loader shape) vs a Salesforce org export |
 
-## SOQL workaround: the export drop folder
+## SOQL workaround: the export workbook
 
 There is no Salesforce API connection, so the org side of every SOQL-mode
-comparison is a **manual export** (this replaces the table you used to paste
-into each `Apttus Files` workbook):
+comparison is supplied manually (this replaces the table you used to paste
+into each `Apttus Files` workbook). The primary vehicle is **one workbook
+with one sheet per query**:
 
-1. Run the dataset's query — the canonical field list is in
-   `docs/soql/<ExportKey>.soql` (Workbench, Data Loader, or a report).
-2. Export as **CSV** and save it as
-   `SOQL Exports/<prod|itest4>/<ExportKey>_<YYYY-MM-DD>.csv`
-   where the date is the day you took the export
-   (e.g. `SOQL Exports/prod/Service_Price_Matrix_2026-07-02.csv`).
-3. `python -m apttus_delta check-exports` tells you per dataset whether the
-   file is found, fresh, and has the expected columns.
+1. `python -m apttus_delta make-template` writes
+   `SOQL Exports/<prod|itest4>/SOQL_Exports_TEMPLATE.xlsx` with an
+   Instructions sheet (every query, generated from the registry's
+   `org_required` field lists — same content as `docs/soql/*.soql`) and one
+   pre-headered sheet per dataset, named by `export_key`.
+2. The user saves a dated copy `SOQL_Exports_<YYYY-MM-DD>.xlsx` and pastes
+   each query result (with or without the header row — a re-pasted header
+   row is detected and dropped) into its sheet.
+3. `python -m apttus_delta check-exports` validates per dataset.
+
+A per-dataset CSV `<export_key>_<YYYY-MM-DD>.csv` in the same folder is
+still accepted; for a given dataset the CSV wins when it is at least as
+new as the workbook.
 
 Rules enforced by the pipeline (it fails loudly rather than guessing):
 
-- **Missing export** → error listing every missing dataset at once.
+- **Missing/empty data** → error listing every affected dataset at once
+  (an empty sheet is called out by name).
 - **Stale export** (older than `export_max_age_days`, default 7) → error.
-- **Schema drift** (missing/unexpected columns vs the workbook's cCRM
+- **Schema drift** (missing/unexpected columns vs the old workbook's cCRM
   query) → error showing the exact difference.
-- Two files with the same date for one dataset → error (ambiguous).
-- The newest date wins when several dated exports exist.
-- CSVs are read with everything as text (codes keep leading zeros, nothing
-  goes scientific), empty fields become nulls like empty Excel cells, and
-  numeric columns (prices, quantities, terms) are compared numerically so
-  `2` in Excel equals `2.0` in a Salesforce export.
+- Two dated files with the same date → error (ambiguous); otherwise the
+  newest date wins. The `_TEMPLATE` file has no date and is never picked up.
+- Everything is read as text (codes keep leading zeros, nothing goes
+  scientific), empty cells/fields become nulls like the old pasted table,
+  and numeric columns (prices, quantities, terms) are compared numerically
+  so `2` in Excel equals `2.0` in a Salesforce export.
 
 The `itest4` profile (`--org itest4` or `org_profile: itest4`) is the same
-pipeline pointed at the iTest4 sandbox exports; for the Service Price
-Matrix it also applies the 15-significant-digit price rounding the iTest4
-workbook variant has.
+pipeline pointed at `SOQL Exports/itest4/`; for the Service Price Matrix it
+also applies the 15-significant-digit price rounding the iTest4 workbook
+variant has.
 
 ## Running
 
