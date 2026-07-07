@@ -5,7 +5,7 @@
 # code. A relative data_dir resolves next to this file; use an absolute path
 # for the real setup, e.g.:
 #   data_dir: "C:/Users/<you>/Philips/PST Onboard Business and Markets - Documents/Catalogue Releases/Apttus Automation"
-data_dir: "."
+data_dir: "C:/Users/320270203/OneDrive - Philips/Documents/projects/Apttus Automation"
 
 # All of these live inside data_dir (override with absolute paths if needed).
 paths:
