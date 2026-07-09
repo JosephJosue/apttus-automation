@@ -208,7 +208,11 @@ def load_export(exp: ExportFile, ds: Dataset, strict_columns: bool = True) -> pd
 
 
 def soql_text(ds: Dataset) -> str:
-    """The canonical SELECT for a dataset (same content as docs/soql/*.soql)."""
+    """The canonical SELECT for a dataset — verbatim from the original
+    workbook's ReadMe sheet when documented there (including its WHERE /
+    ORDER BY), otherwise generated from the expected column list."""
+    if ds.soql_query:
+        return ds.soql_query
     fields = ",\n       ".join(ds.org_required)
     where = f"\nWHERE {ds.soql_where}" if ds.soql_where and "=" in ds.soql_where else ""
     note = (f"-- restrict to: {ds.soql_where}\n"

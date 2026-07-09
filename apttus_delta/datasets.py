@@ -42,6 +42,7 @@ class Dataset:
     export_key: str | None = None
     soql_object: str | None = None
     soql_where: str | None = None
+    soql_query: str | None = None  # verbatim query documented in the workbook's ReadMe
     org_required: tuple[str, ...] = ()
     org_optional: tuple[str, ...] = ("_", "Id")
     org_upper: tuple[str, ...] = ()
@@ -69,6 +70,11 @@ _register(Dataset(
     outputs={"Extra - SP": UPSERT, "Changed Products": UPSERT},
     export_key="Product2", soql_object="Product2",
     soql_where="the service-product subset your saved Product2 query selects",
+    soql_query="""SELECT Id, APTS_Ext_ID__c, ProductCode, Name, Commercial_Product_Name__c, Apttus_Config2__ConfigurationType__c, APTS_Type__c, Apttus_Config2__ProductType__c, Product_Business_Type__c, IsActive,
+       Apttus_Config2__Customizable__c, Apttus_Config2__HasAttributes__c, APTS_Send_to_SAP__c, APTS_Service_Classification__c, APTS_Service_Cost_Category__c,
+       APTS_Service_Product_Range__c, APTS_RSM_Type__c, Description, APTS_Long_Sales_Text__c, APTS_Exclude_From_CFD__c, APTS_Send_SPH_To_SAP__c
+FROM Product2
+WHERE IsActive = true AND Apttus_Config2__ProductType__c = 'Service' AND (NOT ProductCode LIKE 'SVC%')""",
     org_required=(
         "APTS_Ext_ID__c", "ProductCode", "Name", "Commercial_Product_Name__c",
         "Apttus_Config2__ConfigurationType__c", "APTS_Type__c", "Apttus_Config2__ProductType__c",
@@ -107,6 +113,8 @@ _register(Dataset(
     builder=t.build_g02,
     outputs={"Not Matching": UPSERT},
     export_key="CVG", soql_object="APTS_CVG__c",
+    soql_query="""SELECT Name, APTS_Ext_ID__c, Description__c, APTS_Exclude_From_CFD__c, Service_Group__c, Service_Group_Description__c
+FROM APTS_CVG__c""",
     org_required=("Name", "APTS_Ext_ID__c", "Description__c", "APTS_Exclude_From_CFD__c",
                   "Service_Group__c", "Service_Group_Description__c"),
     org_upper=("APTS_Exclude_From_CFD__c",),
@@ -120,6 +128,10 @@ _register(Dataset(
     builder=t.build_g03,
     outputs={"Extra": UPSERT, "Extra in cCRM": DEACTIVATE},
     export_key="CVG_Mapping", soql_object="APTS_CVG_Mapping__c",
+    soql_query="""SELECT APTS_Ext_ID__c, Name, APTS_Active__c, APTS_CVG__r.APTS_Ext_ID__c, APTS_CVG__r.Name, APTS_Product__r.APTS_Ext_ID__c, APTS_Product__r.Name, APTS_Quantity__c,
+       APTS_Check_Eligibility__c, APTS_Eligibility_Message__c
+FROM APTS_CVG_Mapping__c
+WHERE APTS_Active__c = true""",
     org_required=("APTS_Ext_ID__c", "Name", "APTS_Active__c", "APTS_CVG__r.APTS_Ext_ID__c",
                   "APTS_CVG__r.Name", "APTS_Product__r.APTS_Ext_ID__c", "APTS_Product__r.Name",
                   "APTS_Quantity__c", "APTS_Check_Eligibility__c", "APTS_Eligibility_Message__c"),
@@ -135,6 +147,8 @@ _register(Dataset(
     builder=t.build_g04,
     outputs={"Extra": UPSERT},
     export_key="Product_Options", soql_object="M2O_ProductOptions__c",
+    soql_query="""SELECT Name, ExternalId__c, Product__r.APTS_Ext_ID__c, Product__r.Name, Option__r.APTS_Ext_ID__c, Option__r.Name
+FROM M2O_ProductOptions__c""",
     org_required=("Name", "ExternalId__c", "Option__r.APTS_Ext_ID__c", "Option__r.Name",
                   "Product__r.APTS_Ext_ID__c", "Product__r.Name"),
     org_optional=("_", "Id", "Option__r", "Product__r"),
@@ -147,6 +161,8 @@ _register(Dataset(
     builder=t.build_g05,
     outputs={"Not Matching": UPSERT},
     export_key="cCRM_Product_Mapping", soql_object="APTS_Apttus_cCRM_Product_Mapping__c",
+    soql_query="""SELECT Apttus_Product__r.APTS_Ext_ID__c, Apttus_Product__r.Name, CCRM_Product__r.APTS_Ext_ID__c, CCRM_Product__r.Name, Service_Plan_Type__c
+FROM APTS_Apttus_cCRM_Product_Mapping__c""",
     org_required=("Apttus_Product__r.APTS_Ext_ID__c", "Apttus_Product__r.Name",
                   "CCRM_Product__r.APTS_Ext_ID__c", "CCRM_Product__r.Name",
                   "Service_Plan_Type__c"),
@@ -160,6 +176,9 @@ _register(Dataset(
     builder=t.build_g06,
     outputs={"Extra": UPSERT, "Not Matching": UPSERT},
     export_key="CFD_Exhibits", soql_object="APTS_Product_Exhibit_Definition_Mapping__c",
+    soql_query="""SELECT APTS_Ext_ID__c, APTS_Product_Code__c, APTS_Code__c, APTS_Description__c, APTS_Product_Description__c, APTS_Type__c, Product__r.APTS_Ext_ID__c
+FROM APTS_Product_Exhibit_Definition_Mapping__c
+WHERE (NOT APTS_Product_Code__c LIKE 'SVC%')""",
     org_required=("APTS_Ext_ID__c", "APTS_Product_Code__c", "APTS_Code__c",
                   "APTS_Description__c", "APTS_Product_Description__c", "APTS_Type__c",
                   "Product__r.APTS_Ext_ID__c"),
@@ -177,6 +196,10 @@ _register(Dataset(
     outputs={"Not Matching": UPSERT},
     export_key="Global_EqModels", soql_object="Product2",
     soql_where="the equipment-product subset your saved Global Eq Models query selects",
+    soql_query="""SELECT APTS_Ext_ID__c, ProductCode, Name, APTS_Service_Product_Category__c, APTS_Service_Product_Range__c, APTS_PM_Duration_of_visit_onsite__c, APTS_PM_Engineers_per_visit__c, APTS_PM_Visits_per_year__c, APTS_Available_CVG_Groups__c, APTS_Not_Available_CVG_Groups__c
+FROM Product2
+WHERE APTS_Available_CVG_Groups__c != null OR APTS_Not_Available_CVG_Groups__c != null OR APTS_Service_Product_Category__c != null OR APTS_Service_Product_Range__c != null
+ORDER BY Business_Group__c, APTS_Service_Product_Category__c""",
     org_required=("APTS_Ext_ID__c", "ProductCode", "Name", "APTS_Service_Product_Category__c",
                   "APTS_Service_Product_Range__c", "APTS_PM_Duration_of_visit_onsite__c",
                   "APTS_PM_Engineers_per_visit__c", "APTS_PM_Visits_per_year__c",
@@ -234,6 +257,8 @@ _register(Dataset(
     builder=t.build_l01,
     outputs={"Extra in PST": UPSERT, "Extra in cCRM to be removed": DEACTIVATE},
     export_key="Eq_Price_Relevant_List", soql_object="Apttus_cCRM_Equipmnt_Price_Relevant_lst__c",
+    soql_query="""SELECT Name, APTS_Ext_ID__c, APTS_Country__c, APTS_Product__r.APTS_Ext_ID__c, APTS_Product__r.Name
+FROM Apttus_cCRM_Equipmnt_Price_Relevant_lst__c""",
     org_required=("Name", "APTS_Ext_ID__c", "APTS_Country__c",
                   "APTS_Product__r.APTS_Ext_ID__c", "APTS_Product__r.Name"),
     org_optional=("_", "Id", "APTS_Product__r"),
@@ -249,6 +274,9 @@ _register(Dataset(
     outputs={"Extra": UPSERT, "Not Matching": UPSERT},
     export_key="CVG_Translation", soql_object="APTS_CFD_Localization_Support__c",
     soql_where="APTS_Type__c = 'CVG'",
+    soql_query="""SELECT APTS_CVG__r.APTS_Ext_ID__c, Name, APTS_Ext_Id__c, APTS_CFD_Language__c, APTS_Translated_value__c, APTS_Exclude_from_CFD__c, APTS_Type__c
+FROM APTS_CFD_Localization_Support__c
+WHERE APTS_Type__c = 'CVG'""",
     org_required=("APTS_CVG__r.APTS_Ext_ID__c", "Name", "APTS_Ext_ID__c",
                   "APTS_CFD_Language__c", "APTS_Translated_value__c",
                   "APTS_Exclude_from_CFD__c", "APTS_Type__c"),
@@ -266,6 +294,9 @@ _register(Dataset(
     outputs={"Extra": UPSERT, "Not Matching": UPSERT},
     export_key="RSM_Translation", soql_object="APTS_CFD_Localization_Support__c",
     soql_where="APTS_Type__c = 'RSM Type'",
+    soql_query="""SELECT Name, APTS_Ext_Id__c, APTS_CFD_Language__c, APTS_Translated_value__c, APTS_Long_Translated_Value__c, APTS_Type__c
+FROM APTS_CFD_Localization_Support__c
+WHERE APTS_Type__c = 'RSM Type'""",
     org_required=("Name", "APTS_Ext_ID__c", "APTS_CFD_Language__c", "APTS_Translated_value__c",
                   "APTS_Long_Translated_Value__c", "APTS_Type__c"),
 ))
@@ -280,6 +311,9 @@ _register(Dataset(
     outputs={"Extra": UPSERT, "Not Matching": UPSERT},
     export_key="ServicePlanType_Translation", soql_object="APTS_CFD_Localization_Support__c",
     soql_where="APTS_Type__c = 'Service Plan Type'",
+    soql_query="""SELECT Name, APTS_Ext_Id__c, APTS_CFD_Language__c, APTS_Translated_value__c, APTS_Type__c
+FROM APTS_CFD_Localization_Support__c
+WHERE APTS_Type__c = 'Service Plan Type'""",
     org_required=("Name", "APTS_Ext_ID__c", "APTS_CFD_Language__c", "APTS_Translated_value__c",
                   "APTS_Type__c"),
 ))
@@ -294,6 +328,9 @@ _register(Dataset(
     outputs={"Extra": UPSERT, "Not Matching": UPSERT},
     export_key="StartMonth_Translation", soql_object="APTS_CFD_Localization_Support__c",
     soql_where="APTS_Type__c = 'Start Month'",
+    soql_query="""SELECT Name, APTS_Ext_Id__c, APTS_CFD_Language__c, APTS_Translated_value__c, APTS_Exclude_from_CFD__c, APTS_Type__c
+FROM APTS_CFD_Localization_Support__c
+WHERE APTS_Type__c = 'Start Month'""",
     org_required=("Name", "APTS_Ext_ID__c", "APTS_CFD_Language__c", "APTS_Translated_value__c",
                   "APTS_Exclude_from_CFD__c", "APTS_Type__c"),
     org_upper=("APTS_Exclude_from_CFD__c",),
@@ -309,6 +346,10 @@ _register(Dataset(
     builder=t.build_l06,
     outputs={"Extra": UPSERT, "No Match": UPSERT},
     export_key="Sales_Text", soql_object="Apttus_Config2__ProductTranslation__c",
+    soql_query="""SELECT APTS_Ext_ID__c, Apttus_Config2__ProductId__r.APTS_Ext_ID__c, Apttus_Config2__ProductId__r.Name, Apttus_Config2__ProductCode__c, Apttus_Config2__Name__c, APTS_Country_Code__c, APTS_Language__c, APTS_Entitlement_Category__c, APTS_Entitlement_SubCategory__c, Apttus_Config2__Description__c, APTS_Long_Sales_Text__c, APTS_Exclude_From_CFD__c
+FROM Apttus_Config2__ProductTranslation__c
+WHERE Apttus_Config2__ProductId__r.Apttus_Config2__ProductType__c = 'Service' AND (NOT Apttus_Config2__ProductId__r.APTS_Ext_ID__c LIKE 'SVC%')
+ORDER BY APTS_Country_Code__c""",
     org_required=("Apttus_Config2__ProductId__r.APTS_Ext_ID__c",
                   "Apttus_Config2__ProductId__r.Name", "Apttus_Config2__ProductCode__c",
                   "Apttus_Config2__Name__c", "APTS_Country_Code__c", "APTS_Language__c",
@@ -328,6 +369,12 @@ _register(Dataset(
     builder=t.build_l07,
     outputs={"Extra": UPSERT, "Not Matching": UPSERT, "Extra in cCRM (Deactivate)": DEACTIVATE},
     export_key="Service_Price_Matrix", soql_object="APTS_Service_Price_Matrix__c",
+    soql_query="""SELECT APTS_Ext_ID__c, APTS_Country__c, APTS_CVG__r.APTS_Ext_ID__c, APTS_Service__r.APTS_Ext_ID__c, APTS_Service__r.Name, APTS_Price_Type__c,
+       APTS_List_Price__c, APTS_Target_Price__c, APTS_Cost__c, APTS_NBV_Default_Value__c, APTS_CNA__c, CurrencyIsoCode,
+       APTS_Min_Selling_Term__c, APTS_Max_Selling_Term__c, APTS_Pricebook_Name__c, APTS_Pricebook_Simulation_Date__c, APTS_Portfolio_Name__c, APTS_Active__c,
+       APTS_Service_Business_Unit__c, Name
+FROM APTS_Service_Price_Matrix__c
+WHERE APTS_Active__c = true""",
     org_required=("APTS_Ext_ID__c", "APTS_Country__c", "APTS_CVG__r.APTS_Ext_ID__c",
                   "APTS_Service__r.APTS_Ext_ID__c", "APTS_Service__r.Name",
                   "APTS_Price_Type__c", "APTS_List_Price__c", "APTS_Target_Price__c",

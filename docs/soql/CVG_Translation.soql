@@ -1,12 +1,7 @@
 -- L02. CVG_Translation — org-side input for the release delta.
--- Run in Workbench / Data Loader, export as CSV, save as:
---   SOQL Exports/<prod|itest4>/CVG_Translation_<YYYY-MM-DD>.csv
-SELECT APTS_CVG__r.APTS_Ext_ID__c,
-       Name,
-       APTS_Ext_ID__c,
-       APTS_CFD_Language__c,
-       APTS_Translated_value__c,
-       APTS_Exclude_from_CFD__c,
-       APTS_Type__c
+-- Run in Salesforce, copy the full result INCLUDING headers, and paste it
+-- into the 'CVG_Translation' sheet of SOQL Exports/<prod|itest4>/SOQL_Exports_<YYYY-MM-DD>.xlsx
+-- (query as documented in the original workbook's ReadMe sheet)
+SELECT APTS_CVG__r.APTS_Ext_ID__c, Name, APTS_Ext_Id__c, APTS_CFD_Language__c, APTS_Translated_value__c, APTS_Exclude_from_CFD__c, APTS_Type__c
 FROM APTS_CFD_Localization_Support__c
 WHERE APTS_Type__c = 'CVG'

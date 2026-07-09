@@ -120,15 +120,16 @@ def test_config_norway_yaml_boolean(tmp_path):
 
 
 def test_config_paths_resolve_under_data_dir(tmp_path):
+    data = tmp_path / "somewhere" / "Apttus Automation"
     cfg_file = tmp_path / "cfg/config.yaml"
     cfg_file.parent.mkdir()
-    cfg_file.write_text('data_dir: "/data/Apttus Automation"\n', encoding="utf-8")
+    cfg_file.write_text(f'data_dir: "{data.as_posix()}"\n', encoding="utf-8")
     from apttus_delta.config import load_config
 
     cfg = load_config(cfg_file)
-    assert str(cfg.current_release) == "/data/Apttus Automation/01. Current Release"
-    assert str(cfg.soql_exports) == "/data/Apttus Automation/SOQL Exports"
-    assert str(cfg.apttus_files) == "/data/Apttus Automation/Apttus Files"
+    assert cfg.current_release == data / "01. Current Release"
+    assert cfg.soql_exports == data / "SOQL Exports"
+    assert cfg.apttus_files == data / "Apttus Files"
 
 
 def test_config_relative_data_dir_resolves_next_to_config(tmp_path):

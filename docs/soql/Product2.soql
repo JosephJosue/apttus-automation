@@ -1,25 +1,9 @@
 -- G00. Product2 — org-side input for the release delta.
--- Run in Workbench / Data Loader, export as CSV, save as:
---   SOQL Exports/<prod|itest4>/Product2_<YYYY-MM-DD>.csv
--- NOTE: restrict to the service-product subset your saved Product2 query selects.
-SELECT APTS_Ext_ID__c,
-       ProductCode,
-       Name,
-       Commercial_Product_Name__c,
-       Apttus_Config2__ConfigurationType__c,
-       APTS_Type__c,
-       Apttus_Config2__ProductType__c,
-       Product_Business_Type__c,
-       IsActive,
-       Apttus_Config2__Customizable__c,
-       Apttus_Config2__HasAttributes__c,
-       APTS_Send_to_SAP__c,
-       APTS_Service_Classification__c,
-       APTS_Service_Cost_Category__c,
-       APTS_Service_Product_Range__c,
-       APTS_RSM_Type__c,
-       Description,
-       APTS_Long_Sales_Text__c,
-       APTS_Exclude_From_CFD__c,
-       APTS_Send_SPH_To_SAP__c
+-- Run in Salesforce, copy the full result INCLUDING headers, and paste it
+-- into the 'Product2' sheet of SOQL Exports/<prod|itest4>/SOQL_Exports_<YYYY-MM-DD>.xlsx
+-- (query as documented in the original workbook's ReadMe sheet)
+SELECT Id, APTS_Ext_ID__c, ProductCode, Name, Commercial_Product_Name__c, Apttus_Config2__ConfigurationType__c, APTS_Type__c, Apttus_Config2__ProductType__c, Product_Business_Type__c, IsActive,
+       Apttus_Config2__Customizable__c, Apttus_Config2__HasAttributes__c, APTS_Send_to_SAP__c, APTS_Service_Classification__c, APTS_Service_Cost_Category__c,
+       APTS_Service_Product_Range__c, APTS_RSM_Type__c, Description, APTS_Long_Sales_Text__c, APTS_Exclude_From_CFD__c, APTS_Send_SPH_To_SAP__c
 FROM Product2
+WHERE IsActive = true AND Apttus_Config2__ProductType__c = 'Service' AND (NOT ProductCode LIKE 'SVC%')

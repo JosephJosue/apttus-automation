@@ -10,3 +10,13 @@ Output/
 # Manual Salesforce exports (org data; drop them here, don't commit them)
 SOQL Exports/*/*.csv
 SOQL Exports/*/*.xlsx
+SOQL Exports/*/*.xls
+
+# Release/server data — lives locally or in the synced SharePoint/OneDrive
+# data_dir only, never in git. See README.md "Setup" for how to point the
+# tool at that folder.
+00. Previous Release/
+01. Current Release/
+Apttus Files/
+Split/
+Validation/
