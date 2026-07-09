@@ -238,3 +238,19 @@ def test_template_columns_are_text_formatted(tmp_path):
     ws = wb["CFD_Exhibits"]
     assert ws.column_dimensions["A"].number_format == "@"
     assert ws.column_dimensions["G"].number_format == "@"
+
+
+def test_config_default_data_dir_is_parent_of_repo(tmp_path):
+    """The code lives in python-automation/ inside the data folder, so the
+    default data_dir is one level up from where config.yaml sits."""
+    repo = tmp_path / "Apttus Automation" / "python-automation"
+    repo.mkdir(parents=True)
+    cfg_file = repo / "config.yaml"
+    cfg_file.write_text('data_dir: ".."\n', encoding="utf-8")
+    from apttus_delta.config import load_config
+
+    cfg = load_config(cfg_file)
+    assert cfg.current_release.resolve() == (
+        tmp_path / "Apttus Automation" / "01. Current Release").resolve()
+    assert cfg.soql_exports.resolve() == (
+        tmp_path / "Apttus Automation" / "SOQL Exports").resolve()

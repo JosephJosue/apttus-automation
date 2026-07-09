@@ -1,11 +1,20 @@
 # Configuration for the apttus-delta pipeline.
 #
-# data_dir is the LOCAL folder holding the release data (e.g. your synced
-# "Apttus Automation" SharePoint/OneDrive folder). The repo only carries the
-# code. A relative data_dir resolves next to this file; use an absolute path
-# for the real setup, e.g.:
+# The tool lives in the python-automation/ subfolder of your "Apttus
+# Automation" data folder, so data_dir defaults to ".." (one level up) and
+# normally needs no editing:
+#
+#   Apttus Automation/
+#   ├── 00. Previous Release/
+#   ├── 01. Current Release/
+#   ├── SOQL Exports/            (prod/ and itest4/ inside)
+#   ├── Output/
+#   ├── Split/
+#   └── python-automation/       <- this folder (the code + this file)
+#
+# Only change data_dir if the data lives somewhere else, e.g.:
 #   data_dir: "C:/Users/<you>/Philips/PST Onboard Business and Markets - Documents/Catalogue Releases/Apttus Automation"
-data_dir: "C:/Users/320270203/OneDrive - Philips/Documents/projects/Apttus Automation"
+data_dir: ".."
 
 # All of these live inside data_dir (override with absolute paths if needed).
 paths:
@@ -18,6 +27,7 @@ paths:
   validation: "Validation"       # legacy validation folder (only used by `verify`)
 
 org_profile: prod                # prod | itest4 -> reads SOQL Exports/<org_profile>/
+                                 # override per run with:  --org itest4
 release_date: null               # YYYY-MM-DD; null = today; stamps output file names
 export_max_age_days: 7           # older org exports fail the freshness check
 strict_columns: true             # unexpected columns in an export = hard fail

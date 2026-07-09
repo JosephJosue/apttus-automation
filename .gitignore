@@ -4,19 +4,16 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 
-# Generated pipeline outputs
+# Server/release data NEVER goes in git. It all lives one level up, outside
+# this repo (data_dir defaults to ".."). These entries are a safety net in
+# case data is ever copied into the repo or data_dir is pointed at ".".
 Output/
-
-# Manual Salesforce exports (org data; drop them here, don't commit them)
-SOQL Exports/*/*.csv
-SOQL Exports/*/*.xlsx
-SOQL Exports/*/*.xls
-
-# Release/server data — lives locally or in the synced SharePoint/OneDrive
-# data_dir only, never in git. See README.md "Setup" for how to point the
-# tool at that folder.
+SOQL Exports/
 00. Previous Release/
 01. Current Release/
 Apttus Files/
 Split/
 Validation/
+*.xlsx
+*.xls
+*.csv

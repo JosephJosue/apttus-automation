@@ -25,13 +25,19 @@ def _add_common(p):
     p.add_argument("--datasets", type=str, default=None,
                    help="comma-separated dataset keys (default: all), e.g. L07,L09")
     p.add_argument("--org", type=str, default=None, choices=["prod", "itest4"],
-                   help="org profile override")
+                   help="which Salesforce server's data to use: reads "
+                        "SOQL Exports/prod/ or SOQL Exports/itest4/ "
+                        "(default: org_profile in config.yaml, normally prod)")
 
 
 def _config(args):
     path = args.config
-    if path is None and Path("config.yaml").is_file():
-        path = Path("config.yaml")
+    if path is None:
+        for candidate in (Path("config.yaml"),
+                          Path(__file__).resolve().parent.parent / "config.yaml"):
+            if candidate.is_file():
+                path = candidate
+                break
     cfg = load_config(path, data_dir=args.data_dir)
     if getattr(args, "datasets", None):
         cfg.datasets = [k.strip() for k in args.datasets.split(",") if k.strip()]
@@ -51,6 +57,12 @@ Apttus Release Delta Tool — tell it what to do by adding a command:
   python -m apttus_delta verify           compare results against the old Excel pipeline
 
 A normal release run is: make-template (once) -> paste data -> check-exports -> run -> split.
+
+Every command accepts --org to pick which Salesforce server's data to use:
+
+  python -m apttus_delta run --org prod       production (SOQL Exports/prod/, default)
+  python -m apttus_delta run --org itest4     iTest4 sandbox (SOQL Exports/itest4/)
+
 Step-by-step instructions: see README.md. Add --help to any command for its options.\
 """
 

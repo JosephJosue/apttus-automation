@@ -22,7 +22,7 @@ first time; after that, a normal release run is just Steps 4–7.
 3. To check it worked: open the **Command Prompt** (press the Windows key,
    type `cmd`, press Enter) and type:
 
-   ```
+   ```text
    python --version
    ```
 
@@ -31,51 +31,50 @@ first time; after that, a normal release run is just Steps 4–7.
 
 ## Step 2 — Install the tool (one time)
 
-1. Download this project: on the GitHub page click the green **Code**
-   button → **Download ZIP**, and unzip it somewhere permanent, for example
-   `C:\Tools\apttus-automation`. (If you use Git, `git clone` works too.)
-2. Open the Command Prompt **in that folder**: open the folder in File
-   Explorer, click the address bar, type `cmd` and press Enter.
+The tool lives **inside** your local "Apttus Automation" folder — the
+synced SharePoint/OneDrive folder that holds the release data — in a
+subfolder called `python-automation`. The finished layout looks like this:
+
+```text
+Apttus Automation/
+├── 00. Previous Release/     ← last release (Global + Local country folders)
+├── 01. Current Release/      ← the new release files
+├── SOQL Exports/             ← Salesforce data you paste in (Step 4)
+│   ├── prod/                 ← production server data
+│   └── itest4/               ← iTest4 sandbox data
+├── Output/                   ← the tool creates this (results)
+├── Split/                    ← the tool creates the country files here
+└── python-automation/        ← the tool itself (this project)
+```
+
+1. Get the project into that spot: on the GitHub page click the green
+   **Code** button → **Download ZIP**, and unzip it **inside your Apttus
+   Automation folder** so the folder is named `python-automation`. (With
+   Git: `git clone <url> python-automation` from inside Apttus Automation.)
+2. Open the Command Prompt **in the `python-automation` folder**: open it
+   in File Explorer, click the address bar, type `cmd` and press Enter.
 3. Install the tool by typing:
 
-   ```
+   ```text
    pip install -e .
    ```
 
    Wait until it finishes (it downloads a few libraries the first time).
 
-## Step 3 — Tell the tool where your data is (one time)
+## Step 3 — Check the data location (usually nothing to do)
 
-The tool works on your local **"Apttus Automation"** folder — the synced
-SharePoint/OneDrive folder that contains `00. Previous Release`,
-`01. Current Release`, and so on.
+Because the tool sits inside the Apttus Automation folder, it finds the
+release folders **automatically** (they're one level up). You only need to
+touch configuration if your data lives somewhere else entirely — in that
+case open `config.yaml` with Notepad and set `data_dir:` to the full path
+of the data folder, with forward slashes `/`:
 
-1. In the project folder, open the file **`config.yaml`** with Notepad.
-2. Find the line that starts with `data_dir:` and put the full path of
-   your Apttus Automation folder between the quotes, using forward
-   slashes `/`:
-
-   ```yaml
-   data_dir: "C:/Users/<your id>/Philips/PST Onboard Business and Markets - Documents/Catalogue Releases/Apttus Automation"
-   ```
-
-   Tip: in File Explorer, right-click the folder → **Copy as path**, paste
-   it, then replace every `\` with `/` and remove the surrounding quotes it
-   may add.
-3. Save and close the file. You won't need to touch it again unless the
-   folder moves.
-
-Inside that folder the tool expects the structure you already use:
-
+```yaml
+data_dir: "C:/Users/<your id>/Philips/PST Onboard Business and Markets - Documents/Catalogue Releases/Apttus Automation"
 ```
-Apttus Automation/
-├── 00. Previous Release/     ← last release (Global + Local country folders)
-├── 01. Current Release/      ← the new release files
-├── SOQL Exports/             ← you create this in Step 4
-│   └── prod/
-├── Output/                   ← the tool creates this (results)
-└── Split/                    ← the tool creates the country files here
-```
+
+Tip: in File Explorer, right-click the folder → **Copy as path**, paste
+it, then replace every `\` with `/`.
 
 ## Step 4 — Get the Salesforce data (every release)
 
@@ -84,11 +83,18 @@ the tool cannot connect to Salesforce directly, you fill in **one Excel
 workbook** — one sheet per query — by copying and pasting the query
 results.
 
+The tool can work with data from **two Salesforce servers**: production
+(the `prod` folder, used by default) and the iTest4 sandbox (the `itest4`
+folder). You choose which one a run uses with the `--org` option — see
+Step 6.
+
 **First time only — create the workbook:**
 
-```
+```text
 python -m apttus_delta make-template
 ```
+
+(add `--org itest4` to create it for the sandbox instead)
 
 This creates `Apttus Automation/SOQL Exports/prod/SOQL_Exports_TEMPLATE.xlsx`.
 It has an **Instructions** sheet (containing every query, next to the name
@@ -96,7 +102,7 @@ of the sheet its result belongs on) and 14 data sheets whose first row is
 already filled with the correct column headers:
 
 | Sheet | Salesforce data |
-|---|---|
+| --- | --- |
 | `Product2` | Service product catalogue |
 | `CVG` | Coverages |
 | `CVG_Mapping` | Equipment → coverage mapping |
@@ -117,7 +123,8 @@ already filled with the correct column headers:
 1. Open the template and **save a copy** in the same folder named with
    today's date, for example `SOQL_Exports_2026-07-03.xlsx`
    (the date must be `YYYY-MM-DD`).
-2. Log into the org (production; use the `itest4` folder for iTest4 runs).
+2. Log into the Salesforce server whose folder you're filling (production
+   → `prod/`, iTest4 sandbox → `itest4/`).
 3. For each sheet: run its query (it's on the Instructions sheet), copy
    the **whole result including its header row**, and paste it into cell
    A1 of the sheet, replacing the pre-filled header. Don't worry if your
@@ -140,7 +147,7 @@ refresh the pasted data.
 
 In the Command Prompt (opened in the project folder), type:
 
-```
+```text
 python -m apttus_delta check-exports
 ```
 
@@ -153,7 +160,7 @@ You get one line per dataset:
 
 ## Step 6 — Run the comparison
 
-```
+```text
 python -m apttus_delta run
 ```
 
@@ -162,7 +169,7 @@ every delta, and writes everything into a dated folder, for example
 `Apttus Automation/Output/03.Jul.26/`:
 
 | File | What it is |
-|---|---|
+| --- | --- |
 | `G00…` to `L09…_delta.xlsx` | One workbook per dataset. Each sheet has the same name as the old Power Query result it replaces (`Extra`, `Not Matching`, `Changed Models`, …). |
 | `Global_All_Files.xlsx` | The six global loader sheets, ready for the data loader (replaces *00. Global All Files.xlsx*). |
 | `CFD_Localization.xlsx` | The combined translation loader table (replaces *L02_05. CFD Localization.xlsx*). |
@@ -172,16 +179,20 @@ The screen also shows a short summary at the end. If a run stops with an
 error, see "If something goes wrong" below — the message always names the
 exact file that caused it.
 
-Useful variations:
+**Choosing the Salesforce server:** by default the run uses the
+**production** data (`SOQL Exports/prod/`). Add `--org itest4` to use the
+iTest4 sandbox data instead (`SOQL Exports/itest4/`) — the `--org` option
+works on every command (`make-template`, `check-exports`, `run`, `split`):
 
-```
-python -m apttus_delta run --datasets L07,L09     only some datasets
+```text
+python -m apttus_delta run                        production run (default)
 python -m apttus_delta run --org itest4           iTest4 run (uses SOQL Exports/itest4/)
+python -m apttus_delta run --datasets L07,L09     only some datasets
 ```
 
 ## Step 7 — Create the country files
 
-```
+```text
 python -m apttus_delta split
 ```
 
@@ -206,7 +217,7 @@ Existing files for the same day are replaced.
 ## If something goes wrong
 
 | Message contains | What it means | What to do |
-|---|---|---|
+| --- | --- | --- |
 | `release folder not found` | `data_dir` in `config.yaml` doesn't point at your Apttus Automation folder | Fix the path (Step 3) |
 | `no data found` | No Salesforce data for a dataset | Paste the query result into that sheet of the dated workbook (Step 4) |
 | `sheet … has no data` | A sheet in the workbook is still empty | Paste the query result into it |
@@ -219,7 +230,7 @@ Existing files for the same day are replaced.
 
 Two more commands, for completeness:
 
-```
+```text
 python -m apttus_delta verify      compares the tool's results against the old
                                    Excel workbooks (used when validating the migration)
 python -m pytest tests/            runs the tool's self-tests

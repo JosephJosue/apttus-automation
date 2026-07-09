@@ -24,32 +24,38 @@ Python outputs are drop-in replacements for the Power Query results.
 pip install -e .          # installs pandas, openpyxl, PyYAML + the apttus-delta CLI
 ```
 
-**The data lives outside the repo.** The repo carries the code; the release
-snapshots live in your local "Apttus Automation" folder (the synced
-SharePoint/OneDrive one, with `00. Previous Release/`, `01. Current
-Release/`, etc. inside). Point the pipeline at it in `config.yaml`:
+**The repo lives inside the data folder, and the data lives outside the
+repo.** The code is checked out as the `python-automation/` subfolder of
+the local "Apttus Automation" folder (the synced SharePoint/OneDrive one),
+with the release snapshots as siblings one level up:
 
-```yaml
-data_dir: "C:/Users/<you>/Philips/PST Onboard Business and Markets - Documents/Catalogue Releases/Apttus Automation"
+```text
+Apttus Automation/                (= data_dir, the default "..")
+├── 00. Previous Release/
+├── 01. Current Release/
+├── SOQL Exports/prod/  +  SOQL Exports/itest4/
+├── Output/  and  Split/          (created by the tool)
+├── Apttus Files/  and  Validation/   (legacy, only used by `verify`)
+└── python-automation/            (this git repo)
 ```
 
-or per run with `--data-dir`. All data folders (releases, `SOQL Exports/`,
-`Output/`, `Split/`, and the legacy `Apttus Files/`/`Validation/` used by
-`verify`) resolve inside `data_dir`; any of them can be overridden with an
-absolute path under `paths:`.
+`data_dir` therefore defaults to `..` and normally needs no configuration.
+If the data lives elsewhere, set an absolute `data_dir` in `config.yaml` or
+pass `--data-dir`; each individual folder can also be overridden with an
+absolute path under `paths:`. When no `config.yaml` is found next to the
+current working directory, the CLI falls back to the one at the repo root,
+so the tool runs correctly from any directory.
 
-**None of this data is in git.** `00. Previous Release/`, `01. Current
-Release/`, `Apttus Files/`, `Split/`, `Validation/`, `SOQL Exports/`, and
-`Output/` are all git-ignored — they contain real Salesforce/Philips
-business data and must stay on your machine or in the synced
-SharePoint/OneDrive folder, never on GitHub. For local development you can
-still keep `data_dir: "."` and place data in those folder names next to the
-code; git will simply never track it.
+**None of this data is in git.** The data folders sit physically outside
+the repository, and `.gitignore` additionally blocks them (plus all
+`*.xlsx`/`*.csv`) as a safety net in case data is ever copied into the
+repo — it contains real Salesforce/Philips business data that must stay on
+your machine or in the synced SharePoint/OneDrive folder, never on GitHub.
 
 ## The two comparison modes
 
 | Mode | Datasets | Compares |
-|---|---|---|
+| --- | --- | --- |
 | Local comparison | G01 Product_Structure, G08 Rule 1, G09 Rule 5, G10 Rule 7, G11 Rule 8, L08 Market Inclusions, L09 Rule 3 | `01. Current Release/` vs `00. Previous Release/` |
 | SOQL | G00 Product2, G02 CVG, G03 CVG Mapping, G04 Product Options, G05 cCRM Product Mapping, G06 CFD Exhibits, G07 Global Eq Models, L01 Eq Price Relevant List, L02–L05 translations, L06 Sales Text, L07 Service Price Matrix | `01. Current Release/` (loader shape) vs a Salesforce org export |
 

@@ -2,9 +2,11 @@
 
 The pipeline runs against a *data directory* — the local folder (e.g. the
 synced SharePoint/OneDrive "Apttus Automation" folder) that contains the
-release snapshots. The repo only carries the code; set `data_dir` in
-config.yaml (or pass --data-dir) to point at the data. Every data path
-below resolves relative to `data_dir` unless given as absolute."""
+release snapshots. The code lives in a `python-automation/` subfolder of
+that data directory, so `data_dir` defaults to `..` (the parent of this
+repo). Override it in config.yaml or with --data-dir if the data lives
+elsewhere. Every data path below resolves relative to `data_dir` unless
+given as absolute."""
 
 from __future__ import annotations
 
@@ -26,7 +28,7 @@ _DATA_PATHS = ("current_release", "previous_release", "soql_exports", "output", 
 @dataclass
 class Config:
     base_dir: Path = Path(".")          # where config.yaml lives; resolves a relative data_dir
-    data_dir: Path = Path(".")          # the local "Apttus Automation" data folder
+    data_dir: Path = Path("..")         # the "Apttus Automation" folder (parent of this repo)
     current_release: Path = Path("01. Current Release")
     previous_release: Path = Path("00. Previous Release")
     soql_exports: Path = Path("SOQL Exports")
@@ -67,7 +69,7 @@ class Config:
 
 def load_config(path: Path | None, data_dir: Path | None = None) -> Config:
     if path is None:
-        return Config(data_dir=data_dir or Path("."))
+        return Config(data_dir=data_dir or Path(".."))
     raw = yaml.safe_load(Path(path).read_text(encoding="utf-8")) or {}
     paths = raw.pop("paths", {})
     if "release_date" in raw and raw["release_date"]:
