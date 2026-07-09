@@ -36,9 +36,15 @@ data_dir: "C:/Users/<you>/Philips/PST Onboard Business and Markets - Documents/C
 or per run with `--data-dir`. All data folders (releases, `SOQL Exports/`,
 `Output/`, `Split/`, and the legacy `Apttus Files/`/`Validation/` used by
 `verify`) resolve inside `data_dir`; any of them can be overridden with an
-absolute path under `paths:`. The copies of the data checked into this repo
-(Git LFS) are a reference snapshot for development — `data_dir: "."` runs
-against them.
+absolute path under `paths:`.
+
+**None of this data is in git.** `00. Previous Release/`, `01. Current
+Release/`, `Apttus Files/`, `Split/`, `Validation/`, `SOQL Exports/`, and
+`Output/` are all git-ignored — they contain real Salesforce/Philips
+business data and must stay on your machine or in the synced
+SharePoint/OneDrive folder, never on GitHub. For local development you can
+still keep `data_dir: "."` and place data in those folder names next to the
+code; git will simply never track it.
 
 ## The two comparison modes
 

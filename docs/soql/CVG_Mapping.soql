@@ -1,14 +1,8 @@
 -- G03. CVG_Mapping — org-side input for the release delta.
--- Run in Workbench / Data Loader, export as CSV, save as:
---   SOQL Exports/<prod|itest4>/CVG_Mapping_<YYYY-MM-DD>.csv
-SELECT APTS_Ext_ID__c,
-       Name,
-       APTS_Active__c,
-       APTS_CVG__r.APTS_Ext_ID__c,
-       APTS_CVG__r.Name,
-       APTS_Product__r.APTS_Ext_ID__c,
-       APTS_Product__r.Name,
-       APTS_Quantity__c,
-       APTS_Check_Eligibility__c,
-       APTS_Eligibility_Message__c
+-- Run in Salesforce, copy the full result INCLUDING headers, and paste it
+-- into the 'CVG_Mapping' sheet of SOQL Exports/<prod|itest4>/SOQL_Exports_<YYYY-MM-DD>.xlsx
+-- (query as documented in the original workbook's ReadMe sheet)
+SELECT APTS_Ext_ID__c, Name, APTS_Active__c, APTS_CVG__r.APTS_Ext_ID__c, APTS_CVG__r.Name, APTS_Product__r.APTS_Ext_ID__c, APTS_Product__r.Name, APTS_Quantity__c,
+       APTS_Check_Eligibility__c, APTS_Eligibility_Message__c
 FROM APTS_CVG_Mapping__c
+WHERE APTS_Active__c = true

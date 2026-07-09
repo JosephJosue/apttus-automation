@@ -1,11 +1,7 @@
 -- G06. CFD_Exhibits_Definitions — org-side input for the release delta.
--- Run in Workbench / Data Loader, export as CSV, save as:
---   SOQL Exports/<prod|itest4>/CFD_Exhibits_<YYYY-MM-DD>.csv
-SELECT APTS_Ext_ID__c,
-       APTS_Product_Code__c,
-       APTS_Code__c,
-       APTS_Description__c,
-       APTS_Product_Description__c,
-       APTS_Type__c,
-       Product__r.APTS_Ext_ID__c
+-- Run in Salesforce, copy the full result INCLUDING headers, and paste it
+-- into the 'CFD_Exhibits' sheet of SOQL Exports/<prod|itest4>/SOQL_Exports_<YYYY-MM-DD>.xlsx
+-- (query as documented in the original workbook's ReadMe sheet)
+SELECT APTS_Ext_ID__c, APTS_Product_Code__c, APTS_Code__c, APTS_Description__c, APTS_Product_Description__c, APTS_Type__c, Product__r.APTS_Ext_ID__c
 FROM APTS_Product_Exhibit_Definition_Mapping__c
+WHERE (NOT APTS_Product_Code__c LIKE 'SVC%')

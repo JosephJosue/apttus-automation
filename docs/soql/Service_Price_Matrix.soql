@@ -1,24 +1,10 @@
 -- L07. Service_Price_Matrix — org-side input for the release delta.
--- Run in Workbench / Data Loader, export as CSV, save as:
---   SOQL Exports/<prod|itest4>/Service_Price_Matrix_<YYYY-MM-DD>.csv
-SELECT APTS_Ext_ID__c,
-       APTS_Country__c,
-       APTS_CVG__r.APTS_Ext_ID__c,
-       APTS_Service__r.APTS_Ext_ID__c,
-       APTS_Service__r.Name,
-       APTS_Price_Type__c,
-       APTS_List_Price__c,
-       APTS_Target_Price__c,
-       APTS_Cost__c,
-       APTS_NBV_Default_Value__c,
-       APTS_CNA__c,
-       CurrencyIsoCode,
-       APTS_Min_Selling_Term__c,
-       APTS_Max_Selling_Term__c,
-       APTS_Pricebook_Name__c,
-       APTS_Pricebook_Simulation_Date__c,
-       APTS_Portfolio_Name__c,
-       APTS_Active__c,
-       APTS_Service_Business_Unit__c,
-       Name
+-- Run in Salesforce, copy the full result INCLUDING headers, and paste it
+-- into the 'Service_Price_Matrix' sheet of SOQL Exports/<prod|itest4>/SOQL_Exports_<YYYY-MM-DD>.xlsx
+-- (query as documented in the original workbook's ReadMe sheet)
+SELECT APTS_Ext_ID__c, APTS_Country__c, APTS_CVG__r.APTS_Ext_ID__c, APTS_Service__r.APTS_Ext_ID__c, APTS_Service__r.Name, APTS_Price_Type__c,
+       APTS_List_Price__c, APTS_Target_Price__c, APTS_Cost__c, APTS_NBV_Default_Value__c, APTS_CNA__c, CurrencyIsoCode,
+       APTS_Min_Selling_Term__c, APTS_Max_Selling_Term__c, APTS_Pricebook_Name__c, APTS_Pricebook_Simulation_Date__c, APTS_Portfolio_Name__c, APTS_Active__c,
+       APTS_Service_Business_Unit__c, Name
 FROM APTS_Service_Price_Matrix__c
+WHERE APTS_Active__c = true
